@@ -7,6 +7,7 @@
 [jojo]:http://campar.in.tum.de/Main/JohannaWald
 [fede]:http://campar.in.tum.de/Main/FedericoTombari
 
+This is the SceneGraphFusion c++ framework. 
 
 # Prerequisites
 ## git, cmake
