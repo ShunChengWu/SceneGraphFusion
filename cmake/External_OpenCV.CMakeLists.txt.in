@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 2.8.2)
+
+project(opencv-download NONE)
+include(ExternalProject)
+
+ExternalProject_Add(opencv_external
+        GIT_REPOSITORY https://github.com/opencv/opencv.git
+        GIT_TAG 4.3.0
+        SOURCE_DIR opencv
+        BINARY_DIR opencv-build
+        UPDATE_COMMAND ""
+        PATCH_COMMAND ""
+        BUILD_COMMAND make -j8
+        CMAKE_GENERATOR ${gen}
+        CMAKE_ARGS
+        #        ${ep_common_args}
+        -DBUILD_DOCS:BOOL=OFF
+        -DBUILD_EXAMPLES:BOOL=OFF
+        -DBUILD_NEW_PYTHON_SUPPORT:BOOL=OFF
+        -DBUILD_PACKAGE:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=ON
+        -DBUILD_TESTS:BOOL=OFF
+        -DCMAKE_BUILD_TYPE:STRING=Release
+        -DWITH_FFMPEG:BOOL=OFF
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/
+)

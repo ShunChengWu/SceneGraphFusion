@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.8.2)
+
+project(Json-download NONE)
+include(ExternalProject)
+
+ExternalProject_Add(Json_external
+        GIT_REPOSITORY git@github.com:dropbox/json11.git
+        GIT_TAG v1.0.0
+        SOURCE_DIR Json
+        BINARY_DIR Json-build
+        UPDATE_COMMAND ""
+        PATCH_COMMAND ""
+        BUILD_COMMAND make -j8
+        CMAKE_GENERATOR ${gen}
+        CMAKE_ARGS
+        -DCMAKE_BUILD_TYPE:STRING=Release
+        -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_SOURCE_DIR}/external/
+        )

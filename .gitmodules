@@ -1,0 +1,6 @@
+[submodule "ORUtils"]
+	path = ORUtils
+	url = https://github.com/ShunChengWu/ORUtils.git
+[submodule "libGUI3D"]
+	path = libGUI3D
+	url = https://github.com/ShunChengWu/libGUI3D.git

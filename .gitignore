@@ -1,0 +1,8 @@
+.idea/
+cmake-build-*
+build
+bin
+external/
+*.zip
+__pycache__
+data/

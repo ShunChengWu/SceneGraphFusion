@@ -1,0 +1,3 @@
+
+find_package(Assimp REQUIRED)
+INCLUDE_DIRECTORIES(${Assimp_INCLUDE_DIRS})

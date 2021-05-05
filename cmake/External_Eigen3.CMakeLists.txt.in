@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 3.14) 
+
+project(eigen3-download C CXX)
+include(ExternalProject)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+#ExternalProject_Add(
+#        eigen3_external
+#        GIT_REPOSITORY      https://gitlab.lrz.de/AM/lola/am2b-vision-interface.git
+#        GIT_TAG             origin/master
+#        PREFIX              "${CMAKE_BINARY_DIR}/am2b-vision-interface"
+#        INSTALL_DIR         "${CMAKE_BINARY_DIR}/am2b-vision-interface"
+#        CMAKE_ARGS          "-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>"
+#        TEST_COMMAND        ""
+#        UPDATE_DISCONNECTED 1
+#        STEP_TARGETS        update
+#)
+
+ExternalProject_Add(
+        eigen_external
+        GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git 
+       # GIT_TAG 3.3.9
+        PREFIX       "${CMAKE_BINARY_DIR}/eigen3-external"
+        INSTALL_DIR  "${CMAKE_BINARY_DIR}/eigen3-external"
+        UPDATE_COMMAND ""
+        PATCH_COMMAND ""
+        BUILD_COMMAND make -j8
+        CMAKE_GENERATOR ${gen}
+        CMAKE_ARGS
+        -DCMAKE_CXX_STANDARD=11
+        -DEIGEN_TEST_CXX11=ON
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/
+        )
