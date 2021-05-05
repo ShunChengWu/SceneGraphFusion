@@ -1,4 +1,11 @@
-This is the original implementation of the SceneGraphFusion.
+# SceneGraphFusion
+![teaser](img/teaser.png)
+**Authors**: [Shun-Cheng Wu][sc], [Keisuke Tateno][keisu], [Johanna Wald][jojo] and [Federico Tombari][fede]
+
+[sc]:http://campar.in.tum.de/Main/ShunChengWu
+[keisu]:http://campar.in.tum.de/Main/KeisukeTateno
+[jojo]:http://campar.in.tum.de/Main/JohannaWald
+[fede]:http://campar.in.tum.de/Main/FedericoTombari
 
 
 # Prerequisites
@@ -70,23 +77,9 @@ Example usage:
 ./exe_GraphSLAM --pth_in ./path/to/data --pth_model /path/to/model
 ```
 
-[comment]: <> (#### Run on 3RScan or ScanNet )
-
-[comment]: <> (see README.md in scripts)
-
-[comment]: <> (#### Evaluate on ScanNet Full)
-
-[comment]: <> (1. RUN_OnScanNet.py)
-
-[comment]: <> (2. RUN_GenEvalIdx.py)
-
-[comment]: <> (3. ./scannet_script/evaluate_semantic_label.py)
-
-[comment]: <> (4. ./scannet_script/evaluate_semantic_instance.py)
-
 
 # License
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 ### Paper
 If you find the code useful please consider citing our [paper](https://arxiv.org/pdf/2103.14898.pdf):
