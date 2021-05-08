@@ -56,6 +56,7 @@ build with GUI or graph prediction, pass these options in cmake:
 ```
 cmake -DBUILD_GRAPHPRED=ON -DBUILD_GUI=ON ..
 ```
+Note that the graph prediction module is not yet released. You may encounter error if you build with `BUILD_GRAPHPRED=ON`. That part will be released soon.
 
 # Run
 ```
