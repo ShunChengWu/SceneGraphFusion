@@ -78,7 +78,7 @@ We provide data loader for 3RScan dataset and ScanNet. In default, we use render
 will be generated during on time.
 
 [comment]: <> (For 3RScan you will need to generate rendered depths and aligned poses. See [3RScan]&#40;https://github.com/WaldJohannaU/3RScan/tree/master/c%2B%2B&#41;)
-###Example usage:
+### Example usage:
 To run our system with a test sequence, run `bash prepare_example_data.sh`. It will download an example sequence provided from
 [3RScan](https://github.com/WaldJohannaU/3RScan) repository. Then run
 ```
