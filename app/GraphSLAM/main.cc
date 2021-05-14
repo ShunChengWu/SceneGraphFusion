@@ -17,7 +17,7 @@
 #include "../Utils/EvaluationHelper.h"
 #ifdef COMPILE_WITH_ASSIMP
 #include "../libGUI3D/libGUI3D/GUI3D.h"
-#include "../../libGraphSLAMGUI/meshRenderer.h"
+#include "../../renderer/RendererFactory.h"
 #endif
 #endif
 
@@ -31,12 +31,11 @@ struct Params{
     float depth_edge_threshold = -1; // -1: use default.
 
     /// Use rendered view from a given mesh (for ScanNet)
-    bool use_render=false;
+    bool use_render=true;
     bool save=true;
     bool save_graph=true;
     bool save_graph_ply = true;
     bool save_surfel_ply = true;
-    bool save_kf = true;
     bool save_time = true;
 
     /// Predict semantic scene graph
@@ -91,8 +90,21 @@ void ParseCommondLine(int argc, char **argv, Params &params) {
 #ifdef COMPILE_WITH_ASSIMP
 class Renderer : SC::GUI3D {
 public:
-    Renderer(int width, int height, const std::string &path):SC::GUI3D("render",width,height,false),
-                                                             mMeshRenderer(width,height,path){
+    Renderer(int width, int height, const std::string &path, bool align):SC::GUI3D("render",width,height,false){
+        std::string folder, scan_id;
+        PSLAM::MeshRenderType type;
+        if(path.find("scene") != std::string::npos) {
+            auto parent_folder = tools::PathTool::find_parent_folder(path, 1);
+            scan_id = tools::PathTool::getFileName(parent_folder);
+            folder =  tools::PathTool::find_parent_folder(parent_folder, 1);
+            type = PSLAM::MeshRenderType_ScanNet;
+        } else {
+            auto seq_folder = tools::PathTool::find_parent_folder(path,1);
+            scan_id = tools::PathTool::getFileName(seq_folder);
+            folder = tools::PathTool::find_parent_folder(seq_folder,1);
+            type = PSLAM::MeshRenderType_3RScan;
+        }
+        mMeshRenderer.reset( PSLAM::MakeMeshRenderer(width, height, folder,scan_id,type,align) );
     }
 
     void Render(cv::Mat &rgb, cv::Mat &depth, const Eigen::Matrix4f &pose, const PSLAM::CameraParameters &params){
@@ -101,11 +113,11 @@ public:
                                                params.cx,params.cy,
                                                params.width,params.height,
                                                glCam->projection_control_->near,glCam->projection_control_->far);
-        cv::Mat t_rgb;
-        mMeshRenderer.Render(proj,view_pose,glCam->projection_control_->near,glCam->projection_control_->far,t_rgb,depth);
+        mMeshRenderer->Render(proj,view_pose,glCam->projection_control_->near,glCam->projection_control_->far);
+        depth = mMeshRenderer->GetDepth();
     }
 private:
-    PSLAM::MeshRenderer mMeshRenderer;
+    std::unique_ptr<PSLAM::MeshRendererInterface> mMeshRenderer;
 };
 #else
 class Renderer{
@@ -144,20 +156,18 @@ int main(int argc, char** argv) {
     dataset_loader_.reset(PSLAM::DataLoaderFactory::Make(path));
     dataset_loader_->Reset();
 
+    if(params.use_render) {
+        if (path.find("scene") == std::string::npos) dataset_loader_->GetCamParamDepth() = dataset_loader_->GetCamParamRGB();
+    }
+
 #ifndef COMPILE_WITH_PSLAM_GUI
     std::unique_ptr<Renderer> renderer;
     if(params.use_render) {
         SCLOG(INFO) << "Building renderer...";
-        if(path.find("scene") != std::string::npos) {
-            auto parent_folder = tools::PathTool::find_parent_folder(path, 1);
-            auto scan_id = tools::PathTool::getFileName(parent_folder);
-            auto pth_ply = parent_folder + "/" + scan_id + "_vh_clean_2.ply";
-
-            renderer = std::make_unique<Renderer>(dataset_loader_->GetCamParamDepth().width,
-                                        dataset_loader_->GetCamParamDepth().height,
-                                        pth_ply
-            );
-        }
+        renderer = std::make_unique<Renderer>(dataset_loader_->GetCamParamDepth().width,
+                                              dataset_loader_->GetCamParamDepth().height,
+                                              path, true
+        );
     }
 #endif
 
@@ -195,12 +205,7 @@ int main(int argc, char** argv) {
 #ifdef COMPILE_WITH_PSLAM_GUI
     SCLOG(INFO) << "start gui...";
     PSLAM::GraphSLAMGUI gui(&graphSlam, dataset_loader_.get());
-    if(path.find("sens") != std::string::npos) {
-        auto parent_folder = tools::PathTool::find_parent_folder(path, 1);
-        auto scan_id = tools::PathTool::getFileName(parent_folder);
-        auto pth_ply = parent_folder + "/" + scan_id + "_vh_clean_2.ply";
-        gui.SetRender(dataset_loader_->GetCamParamDepth().width,dataset_loader_->GetCamParamDepth().height,pth_ply);
-    }
+    if(params.use_render) gui.SetRender(dataset_loader_->GetCamParamDepth().width,dataset_loader_->GetCamParamDepth().height,path, true);
     gui.run();
 #else
     SCLOG(INFO) << "start processing frames...";
@@ -225,7 +230,6 @@ int main(int argc, char** argv) {
 
     }
     SCLOG(INFO) << "frame processing finished.";
-
 #endif
     if(params.save) {
         graphSlam.Stop();

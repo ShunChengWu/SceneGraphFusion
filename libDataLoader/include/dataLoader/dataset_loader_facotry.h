@@ -25,7 +25,8 @@ namespace PSLAM {
             // Create dataloader
             switch (inputeType) {
                 case DATASET_3RSCAN: {
-                    auto database = std::make_shared<Scan3RDataset>(inputeType, pth);
+                    auto path = pth.back() == '/'? pth : pth+"/";
+                    auto database = std::make_shared<Scan3RDataset>(inputeType, path);
                     output = new DatasetLoader_3RScan(database);
                     break;
                 }
@@ -34,8 +35,9 @@ namespace PSLAM {
                     output = new DatasetLoader_ScanNet(database);
                     break;
                 }
-                default:
-                    throw std::runtime_error("unable to create dataset loader");
+                case DATASET_DETECT:
+                    break;
+
             }
             return output;
         }

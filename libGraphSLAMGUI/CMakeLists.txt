@@ -1,5 +1,3 @@
-OPTION(USE_RENDEREDVIEW "Enable the rendered view form ScanNet mesh" ON)
-
 IF(USE_RENDEREDVIEW)
     INCLUDE(UseAssimp)
 ENDIF()

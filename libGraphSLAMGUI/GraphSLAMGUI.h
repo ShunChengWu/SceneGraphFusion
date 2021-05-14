@@ -18,7 +18,8 @@
 #include "Label_NYU40.h"
 
 #ifdef COMPILE_WITH_ASSIMP
-#include "meshRenderer.h"
+#include "../renderer/Renderer.h"
+#include "../renderer/RendererFactory.h"
 #endif
 
 namespace PSLAM {
@@ -49,7 +50,7 @@ namespace PSLAM {
 
         void drawGL() override;
 
-        void SetRender(int width, int height, const std::string &path);
+        void SetRender(int width, int height, const std::string &path, bool align);
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
@@ -65,15 +66,16 @@ namespace PSLAM {
         int mDrawGraphType = DRAWGRAPHTYPE_SEGMENTS;
         int mSelectedNodeIdx = 0;
         std::map<int,bool> mEdgeUISwitch;
+        cv::Mat mRGB, mDepth;
 
 #ifdef COMPILE_WITH_ASSIMP
-        std::unique_ptr<MeshRenderer> mMeshRender;
+        std::unique_ptr<MeshRendererInterface> mMeshRender;
 #endif
 
         GraphDrawer mGraphDrawer;
         SurfelDrawer mSurfelDrawer;
 
-        ImageDrawer mImageDrawer[3], mKFDrawer;
+        ImageDrawer mImageDrawer[3];
         bool bProcess = true;
         bool bNeedUpdate = false;
         bool bRenderSurfel=true;

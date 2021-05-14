@@ -29,8 +29,8 @@ GraphSLAMGUI::GraphSLAMGUI(GraphSLAM *graphSlam, DatasetLoader_base *dataloader)
     for (auto &drawer : mImageDrawer)
         drawer.Init(mpDataLoader->GetDepthImage().cols, mpDataLoader->GetDepthImage().rows,
                     GL_RGB);
-    mKFDrawer.Init(mpDataLoader->GetDepthImage().cols, mpDataLoader->GetDepthImage().rows,
-               GL_RGB);
+    mRGB = mpDataLoader->GetRGBImage().clone();//cv::Mat::zeros(mpDataLoader->GetDepthImage().rows, mpDataLoader->GetDepthImage().cols, CV_8UC3);
+    mDepth = mpDataLoader->GetDepthImage().clone();
 
 #ifdef COMPILE_WITH_GRAPHPRED
     if (mpGraphSLAM->GetConfig()->graph_predict && mpGraphSLAM->GetGraphPred()) {
@@ -393,14 +393,14 @@ void GraphSLAMGUI::Process(){
     glDisable(GL_DEPTH_TEST);
     if(bNeedUpdateTexture){
         cv::Mat rgb;
-        cv::cvtColor(mpDataLoader->GetRGBImage(),rgb,cv::COLOR_BGR2RGB);
+        cv::cvtColor(mRGB,rgb,cv::COLOR_BGR2RGB);
         cv::flip(rgb, rgb, 0);
         if (dynamic_cast<DatasetLoader_3RScan*>(mpDataLoader))
             cv::rotate(rgb, rgb, cv::ROTATE_90_COUNTERCLOCKWISE);
         mImageDrawer[0].Update(rgb.ptr(), rgb.cols, rgb.rows);
 
         cv::Mat greyImage;
-        cvtColor(mpDataLoader->GetDepthImage(), greyImage, cv::COLOR_GRAY2BGR);
+        cvtColor(mDepth, greyImage, cv::COLOR_GRAY2BGR);
         cv::flip(greyImage, greyImage, 0);
         if (dynamic_cast<DatasetLoader_3RScan*>(mpDataLoader))
             cv::rotate(greyImage, greyImage, cv::ROTATE_90_COUNTERCLOCKWISE);
@@ -473,8 +473,8 @@ bool GraphSLAMGUI::ProcessSLAM(){
     CTICK("[GUI][Process]ProcessSLAM");
     const Eigen::Matrix4f pose = mpDataLoader->GetPose();
     auto idx = mpDataLoader->GetFrameIndex();
-    auto rgb = mpDataLoader->GetRGBImage();
-    auto depth = mpDataLoader->GetDepthImage();
+    mRGB = mpDataLoader->GetRGBImage();
+    mDepth = mpDataLoader->GetDepthImage();
 #ifdef COMPILE_WITH_ASSIMP
     if(mMeshRender) {
         Eigen::Matrix4f t_p = mpDataLoader->GetPose();
@@ -482,16 +482,17 @@ bool GraphSLAMGUI::ProcessSLAM(){
         t_p.transposeInPlace();
         auto view_pose = glUtil::GetViewMatrix(t_p);
         auto proj = glUtil::Perspective<float>(mpDataLoader->GetCamParamDepth().fx,mpDataLoader->GetCamParamDepth().fy,
-                                        mpDataLoader->GetCamParamDepth().cx,mpDataLoader->GetCamParamDepth().cy,
-                                        mpDataLoader->GetCamParamDepth().width,mpDataLoader->GetCamParamDepth().height,
-                                        glCam->projection_control_->near,glCam->projection_control_->far);
+                                               mpDataLoader->GetCamParamDepth().cx,mpDataLoader->GetCamParamDepth().cy,
+                                               mpDataLoader->GetCamParamDepth().width,mpDataLoader->GetCamParamDepth().height,
+                                               glCam->projection_control_->near,glCam->projection_control_->far);
         cv::Mat t_rgb;
-        mMeshRender->Render(proj,view_pose,glCam->projection_control_->near,glCam->projection_control_->far,t_rgb,depth);
+        mMeshRender->Render(proj,view_pose,glCam->projection_control_->near,glCam->projection_control_->far);
+        mDepth = mMeshRender->GetDepth();
     }
 #endif
     const Eigen::Matrix4f pose_inv = pose.inverse();
     fps_->start();
-    mpGraphSLAM->ProcessFrame(idx,rgb,depth,&pose_inv);
+    mpGraphSLAM->ProcessFrame(idx,mRGB,mDepth,&pose_inv);
     fps_->stop();
     fps_->checkUpdate();
     CTOCK("[GUI][Process]ProcessSLAM");
@@ -1155,10 +1156,22 @@ std::string GraphSLAMGUI::GetEdgeLabel(const Edge *edge){
     return text;
 }
 
-void GraphSLAMGUI::SetRender(int width, int height, const std::string &path) {
+void GraphSLAMGUI::SetRender(int width, int height, const std::string &path, bool align) {
 #ifdef COMPILE_WITH_ASSIMP
-    //int width, int height, float near, float far, const std::string &path
-    mMeshRender = std::make_unique<MeshRenderer>(width,height,path );
+    std::string folder, scan_id;
+    PSLAM::MeshRenderType type;
+    if(path.find("scene") != std::string::npos) {
+        auto parent_folder = tools::PathTool::find_parent_folder(path, 1);
+        scan_id = tools::PathTool::getFileName(parent_folder);
+        folder =  tools::PathTool::find_parent_folder(parent_folder, 1);
+        type = PSLAM::MeshRenderType_ScanNet;
+    } else {
+        auto seq_folder = tools::PathTool::find_parent_folder(path,1);
+        scan_id = tools::PathTool::getFileName(seq_folder);
+        folder = tools::PathTool::find_parent_folder(seq_folder,1);
+        type = PSLAM::MeshRenderType_3RScan;
+    }
+    mMeshRender.reset( PSLAM::MakeMeshRenderer(width, height, folder,scan_id,type,align) );
 #else
     throw std::runtime_error("did not compile with assimp");
 #endif

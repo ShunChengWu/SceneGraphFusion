@@ -23,16 +23,18 @@ namespace PSLAM {
             suffix_rgb = ".color.jpg";
             suffix_pose = ".pose.txt";
             if (rotate_pose_img) {
-                //suffix_depth = ".rescan.rendered.depth.png";
-                suffix_depth = ".rendered.depth.png";
-//        suffix_rgb = ".rendered.color.jpg";
-                suffix_pose = ".align.pose.txt";
+//                suffix_depth = ".rendered.depth.png";
+//                suffix_pose = ".align.pose.txt";
+                suffix_depth = ".depth.pgm";
+                suffix_pose = ".pose.txt";
+//                suffix_pose = use_aligned_pose? ".align.pose.txt" : ".pose.txt";
             }
 
             min_pyr_level = 3;
             number_pose = 6;
             number_length = 6;
         }
+        bool use_aligned_pose = true;
     };
 }
 

@@ -28,13 +28,18 @@ pip3 install cmake
 # OpenCV 4.0.0  
 # This project will try to install them locally if they were not found.
 ```
+# Assimp
+loading meshes for online rendered view generation. 
+```
+apt install libassimp-dev
+```
+
 # Optional dependencies
 With GUI:
 ```
 # OpenGL & Glfw3
 apt install freeglut3-dev libglfw3-dev
-# Assimp
-apt install libassimp-dev
+
 ```
 With graph prediction:
 ```
@@ -47,6 +52,8 @@ build the basic segmentation system
 ```
 git clone {this_repo}
 cd SceneGraphFusion
+git submodule init
+git submodule update
 mkdir build
 cd build
 cmake ..
@@ -67,16 +74,24 @@ Note that the graph prediction module is not yet released. You may encounter err
 ./exe_GraphSLAM --help
 ```
 
-We provide data loader for 3RScan dataset and ScanNet. For 3RScan you will need to generate rendered depths and aligned poses. See [3RScan](https://github.com/WaldJohannaU/3RScan/tree/master/c%2B%2B)
+We provide data loader for 3RScan dataset and ScanNet. In default, we use rendered view for both dataset. The rendered view
+will be generated during on time.
 
-Example usage:
-
+[comment]: <> (For 3RScan you will need to generate rendered depths and aligned poses. See [3RScan]&#40;https://github.com/WaldJohannaU/3RScan/tree/master/c%2B%2B&#41;)
+###Example usage:
+To run our system with a test sequence, run `bash prepare_example_data.sh`. It will download an example sequence provided from
+[3RScan](https://github.com/WaldJohannaU/3RScan) repository. Then run
+```
+cd bin
+./exe_GraphSLAM --pth_in ../data/3RScan/4acaebcc-6c10-2a2a-858b-29c7e4fb410d/sequence/
+```
+Or using the full sequence from either ScanNet or 3RScan
 ```
 # For 3RScan:
-./exe_GraphSLAM --pth_in ./dataset/3RScan/data/3RScan/4acaebcc-6c10-2a2a-858b-29c7e4fb410d/sequence/
+./exe_GraphSLAM --pth_in [path/to/3RScan]/[sequence_id]/sequence/
 # For ScanNet
-./exe_GraphSLAM --pth_in ./dataset/scannet/scans/scene0000_00/scene0000_00.sens
-# RUn with graph prediction
+./exe_GraphSLAM --pth_in [path/to/scannet]/[scan_id]/[scan_id].sens
+# Run with graph prediction
 ./exe_GraphSLAM --pth_in ./path/to/data --pth_model /path/to/model
 ```
 

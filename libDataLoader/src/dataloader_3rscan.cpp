@@ -3,9 +3,13 @@
 //
 #include "../include/dataLoader/dataloader_3rscan.h"
 #include "../include/dataLoader/util.h"
+#include "../include/dataLoader/Scan3R_json_loader.h"
 #include <ORUtils/Logging.h>
 
 #include <utility>
+#include <dataLoader/dataset3RScan.h>
+#include <ORUtils/PathTool.hpp>
+
 using namespace PSLAM;
 
 static const std::vector<std::string> split(const std::string s, const std::string delim) {
@@ -57,10 +61,23 @@ static bool LoadInfoIntrinsics(const std::string& filename,
 
 DatasetLoader_3RScan::DatasetLoader_3RScan(std::shared_ptr<DatasetDefinitionBase> dataset):
         DatasetLoader_base(std::move(dataset)) {
-    if(!LoadInfoIntrinsics(m_dataset->folder+"./_info.txt",false,m_cam_param_d))
+    if(!LoadInfoIntrinsics(m_dataset->folder+"/_info.txt",true,m_cam_param_d))
         throw std::runtime_error("unable to open _info file");
-    if(!LoadInfoIntrinsics(m_dataset->folder+"./_info.txt",false,m_cam_param_rgb))
+    if(!LoadInfoIntrinsics(m_dataset->folder+"/_info.txt",false,m_cam_param_rgb))
         throw std::runtime_error("unable to open _info file");
+    m_poseTransform.setIdentity();
+    if(reinterpret_cast<PSLAM::Scan3RDataset*>(m_dataset.get())->use_aligned_pose) {
+        auto seq_folder = tools::PathTool::find_parent_folder(m_dataset->folder,1);
+        auto seq_name = tools::PathTool::getFileName(seq_folder);
+        auto data_folder = tools::PathTool::find_parent_folder(seq_folder,1);
+        auto scan3rLoader = PSLAM::io::Scan3RLoader(data_folder+"/3RScan.json");
+        if(scan3rLoader.IsRescan(seq_name)) {
+            // find ref scan ID
+            auto ref_id = scan3rLoader.rescanToReference.at(seq_name);
+            m_poseTransform = scan3rLoader.scaninfos.at(ref_id)->rescans.at(seq_name)->transformation;
+            m_poseTransform.topRightCorner<3,1>()*=1e3;
+        }
+    }
 }
 
 const std::string DatasetLoader_3RScan::GetFileName(const std::string& folder,
@@ -123,6 +140,7 @@ bool DatasetLoader_3RScan::Retrieve() {
         cv::rotate(m_d, m_d, cv::ROTATE_90_COUNTERCLOCKWISE);
     }
     LoadPose(m_pose, pose_file_name_,m_dataset->rotate_pose_img);
+    m_pose = m_poseTransform * m_pose;
     frame_index += m_dataset->frame_index_counter;
     return true;
 }

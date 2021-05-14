@@ -30,9 +30,15 @@ namespace PSLAM {
         [[nodiscard]] const Eigen::Matrix4f& GetPose() const { return m_pose; }
         [[nodiscard]] const CameraParameters &GetCamParamDepth() const { return m_cam_param_d; }
         [[nodiscard]] const CameraParameters &GetCamParamRGB() const { return m_cam_param_rgb; }
+        [[nodiscard]] CameraParameters &GetCamParamDepth()  { return m_cam_param_d; }
+        [[nodiscard]] CameraParameters &GetCamParamRGB()  { return m_cam_param_rgb; }
         const DatasetDefinitionBase * GetDataBase(){return m_dataset.get();}
 
+        void SetFrameIndex(int idx) {frame_index = idx;}
+
         const int& GetFrameIndex() const { return frame_index; }
+
+        const int& GetFinalIndex() const { return frame_index_max; }
 
         const DatasetDefinitionBase* GetBase() const {return m_dataset.get(); }
 

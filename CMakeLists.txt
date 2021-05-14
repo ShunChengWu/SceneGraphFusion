@@ -5,6 +5,7 @@ project(GraphSLAM)
 ###########
 OPTION(BUILD_GRAPHPRED "compile with scene graph prediction" OFF)
 OPTION(BUILD_GUI "compile with GUI" OFF)
+OPTION(USE_RENDEREDVIEW "Enable generating rendered view for ScanNet and 3RScan dataset" ON)
 ###################
 # Project setting #
 ###################

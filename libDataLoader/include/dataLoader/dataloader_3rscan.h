@@ -24,6 +24,8 @@ namespace PSLAM {
                                       const std::string &suffix,
                                       int number_length) const;
         bool IsV2() const;
+
+        Eigen::Matrix4f m_poseTransform;
     };
 }
 
