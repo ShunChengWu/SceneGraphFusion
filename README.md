@@ -72,13 +72,17 @@ Note that the graph prediction module is not yet released. You may encounter err
 ./exe_GraphSLAM_GUI --pth_in path/to/3RScan/squence/
 # to see usage and options 
 ./exe_GraphSLAM --help
+# to run with graph prediction (need to build with graph predict)
+./exe_GraphSLAM_GUI --pth_in path/to/3RScan/squence/ --pth_model /path/to/the/traced/model/folder/
 ```
 
 We provide data loader for 3RScan dataset and ScanNet. In default, we use rendered view for both dataset. The rendered view
 will be generated during on time.
 
+you can download the traced model of our pretrained network [here](https://drive.google.com/file/d/1_745ofaOUyP_iFK8A3cSW60L4V7TlWa7/view?usp=sharing)
+
 [comment]: <> (For 3RScan you will need to generate rendered depths and aligned poses. See [3RScan]&#40;https://github.com/WaldJohannaU/3RScan/tree/master/c%2B%2B&#41;)
-### Example usage:
+### Example:
 To run our system with a test sequence, run `bash prepare_example_data.sh`. It will download an example sequence provided from
 [3RScan](https://github.com/WaldJohannaU/3RScan) repository. Then run
 ```

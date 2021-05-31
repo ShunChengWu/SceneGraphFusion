@@ -18,8 +18,10 @@ GraphSLAM::GraphSLAM(ConfigPSLAM *config, const CameraParameters &camParamD):mCo
     pose_.setIdentity();
     if(mConfig->graph_predict) {
 #ifdef COMPILE_WITH_GRAPHPRED
-        LoadPredictModel(mConfig->pth_model);
-        mpGraphPredictor->RUN(mGraph.get());
+        if(LoadPredictModel())
+            mpGraphPredictor->RUN(mGraph.get());
+        else
+            mConfig->graph_predict = false;
 #else
         SCLOG(WARNING) << "Did not compile with graph prediction.";
 #endif
@@ -43,16 +45,18 @@ bool GraphSLAM::Initialize(const CameraParameters &camParamD){
     return true;
 }
 
-void GraphSLAM::LoadPredictModel(const std::string &path) {
+bool GraphSLAM::LoadPredictModel() {
 #ifdef COMPILE_WITH_GRAPHPRED
     try {
         mpGraphPredictor = MakeGraphPredictor(mConfig);
+        return true;
     } catch (...) {
         SCLOG(WARNING) << "Loading model from " << mConfig->pth_model << " failed.";
     }
 #else
     SCLOG(WARNING) << "Did not compile with graph prediction.";
 #endif
+    return false;
 }
 
 void GraphSLAM::SaveModel(const std::string &output_folder) const {

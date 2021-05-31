@@ -81,7 +81,7 @@ namespace PSLAM {
 
         void AddSelectedNodeToUpdate(int idx);
 
-        void LoadPredictModel(const std::string &path);
+        bool LoadPredictModel();
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         std::set<int> mLastUpdatedSegments{};
