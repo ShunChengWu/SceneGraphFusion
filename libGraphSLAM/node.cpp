@@ -6,7 +6,9 @@
 #include <algorithm>
 using namespace PSLAM;
 
-Node::Node(int label): idx(label), mIdxCounter(0) {
+Node::Node(int label):
+idx(label), instance_idx(0), mDebug(false), time_stamp(0),lastUpdatePropertySize(0),
+mbNeedUpdateNodeFeature(false),mIdxCounter(0) {
     last_class_predicted = Unknown();
     instance_idx=idx;
     centroid.setZero();
@@ -20,7 +22,7 @@ int Node::Add(const SurfelPtr &surfel) {
     /*Find Idx*/
     int idx_;
     {
-        std::unique_lock<std::mutex> lock(mMutNode);
+        Lock lock(mMutNode);
         if(!mqFreeIndices.empty()) {
             idx_ = mqFreeIndices.front();
             mqFreeIndices.pop();
@@ -31,14 +33,14 @@ int Node::Add(const SurfelPtr &surfel) {
 
     size_t size;
     {
-        std::unique_lock<std::mutex> lock(mMutSurfel);
+        Lock lock(mMutSurfel);
         surfels.insert( {idx_, surfel} );
         size = surfels.size();
     }
 
     /*Update Properties*/
     {
-        std::unique_lock<std::mutex> lock(mMutNode);
+        Lock lock(mMutNode);
         pos_sum += surfel->pos;
         centroid = pos_sum / size;
         if(size == 1){
@@ -62,7 +64,7 @@ void Node::Remove(const int index_in_graph_old) {
     size_t size;
     SurfelPtr surfel;
     {
-        std::unique_lock<std::mutex> lock_surfel(mMutSurfel);
+        Lock lock_surfel(mMutSurfel);
         size = surfels.size();
         if(surfels.find(index_in_graph_old) == surfels.end())
             throw std::runtime_error("Trying to remove surfel but it doesn't exist.");
@@ -71,14 +73,14 @@ void Node::Remove(const int index_in_graph_old) {
         surfels.erase(index_in_graph_old);
     }
 
-    std::unique_lock lock_node(mMutNode);
+    Lock lock_node(mMutNode);
     pos_sum -= surfel->pos;
     centroid = pos_sum / size;
     bool need_recal_bbox = surfel->pos==bbox_min || surfel->pos ==bbox_max;
 
     mqFreeIndices.emplace(index_in_graph_old);
     if(need_recal_bbox) {
-        std::unique_lock<std::mutex> lock_surfel(mMutSurfel);
+        Lock lock_surfel(mMutSurfel);
         for (size_t i=0;i<size;++i){
             auto surfel_ = surfels.at(i);
             if(i==0){
@@ -103,13 +105,13 @@ void Node::Update(const int label,
 }
 
 void Node::RemoveEdge(const EdgePtr &edge){
-    std::unique_lock<std::mutex> lock(mMutEdge);
+    Lock lock(mMutEdge);
     if (edges.find(edge) == edges.end()) return;
     edges.erase(edge);
 }
 
 void Node::UpdatePrediction(const std::map<std::string, float> &pd, const std::map<std::string,std::pair<size_t, size_t>> &sizeAndEdge, bool fusion) {
-    std::unique_lock<std::mutex> lock(mMutPred);
+    Lock lock(mMutPred);
     for(const auto &pair:pd) {
         auto name = pair.first;
         auto value = pair.second;
@@ -146,7 +148,7 @@ void Node::UpdatePrediction(const std::map<std::string, float> &pd, const std::m
                 max_label = pair.first;
             }
         }
-        std::unique_lock<std::mutex> lock_pd (mMutPDLabel);
+        Lock lock_pd (mMutPDLabel);
         last_class_predicted = max_label;
     }
 }
@@ -157,7 +159,7 @@ bool Node::CheckConnectivity(Node *nodeP, float margin, bool modify){
     if(idx_s == idx_t) return true;
     bool has_out = false;
     {
-        std::unique_lock<std::mutex> lock_this(this->mMutNode);
+        Lock lock_this(this->mMutNode);
         for(size_t m=0;m<3;++m){
             if (bbox_min[m]-margin > nodeP->bbox_max[m]+margin) has_out = true;
             if (nodeP->bbox_min[m]-margin > bbox_max[m]+margin) has_out = true;
@@ -166,7 +168,7 @@ bool Node::CheckConnectivity(Node *nodeP, float margin, bool modify){
     }
     if(!modify) return !has_out;
 
-    std::unique_lock<std::mutex> lock(mMutNN);
+    Lock lock(mMutNN);
     if (has_out) {
         if(neighbors.find(idx_t) != neighbors.end()) neighbors.erase(idx_t);
         if(nodeP->neighbors.find(idx_s) != nodeP->neighbors.end())
@@ -179,7 +181,7 @@ bool Node::CheckConnectivity(Node *nodeP, float margin, bool modify){
 }
 
 int Node::GetPointSize() {
-    std::unique_lock<std::mutex> lock (mMutSurfel);
+    Lock lock (mMutSurfel);
     return surfels.size();
 }
 
@@ -188,7 +190,7 @@ void Node::UpdateSelectedNode(const size_t time, const size_t filter_size, const
     const auto& last_size = lastUpdatePropertySize; // this will be updated in UpdatePrediction
     size_t new_size;
     {
-        std::unique_lock<std::mutex> lock (mMutSurfel);
+        Lock lock (mMutSurfel);
         new_size = surfels.size();
     }
     static float threshold_size = 0.1;
@@ -200,7 +202,7 @@ void Node::UpdateSelectedNode(const size_t time, const size_t filter_size, const
     if(force) should_update = true;
     if( !should_update) return;
 
-    std::unique_lock<std::mutex> lock(mMutSelected);
+    Lock lock(mMutSelected);
     std::random_device rd; // obtain a random number from hardware
     std::mt19937 gen(rd()); // seed the generator
 
@@ -294,6 +296,6 @@ void Node::UpdateSelectedNode(const size_t time, const size_t filter_size, const
 }
 
 const std::string Node::GetLabel() const {
-    std::unique_lock<std::mutex> lock(mMutPDLabel);
+    Lock lock(mMutPDLabel);
     return last_class_predicted;
 }

@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <Eigen/Core>
+#include <ORUtils/MathUtils.h>
 //TODO: add label display on edges
 
 using namespace PSLAM;
@@ -78,7 +79,7 @@ void GraphDrawer::DrawText(float windowWidth, float windowHeight, const Eigen::M
         auto text = i.text;
         if(point.z() < 0) continue;
 //        std::cout << text << ": " << point.z() << "\n";
-        float scale = std::clamp((5-std::sqrt(point.z()))/5.f,0.1f,1.f);
+        float scale = CLAMP((5-std::sqrt(point.z()))/5.f,0.1f,1.f);
         mTextDrawer.Draw(text,
                          point.x(),point.y(), float(windowWidth), float(windowHeight),scale, //TODO: add a controllabel scale here
                          {color.x(),color.y(),color.z()});
