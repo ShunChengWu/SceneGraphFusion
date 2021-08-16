@@ -83,7 +83,8 @@ Note that the graph prediction module is not yet released. You may encounter err
 We provide data loader for 3RScan dataset and ScanNet. In default, we use rendered view for both dataset. The rendered view
 will be generated during on time.
 
-you can download the traced model of our pretrained network [here](https://drive.google.com/file/d/1_745ofaOUyP_iFK8A3cSW60L4V7TlWa7/view?usp=sharing)
+you can download the traced model of our pretrained network [here](https://drive.google.com/file/d/1_745ofaOUyP_iFK8A3cSW60L4V7TlWa7/view?usp=sharing). 
+The model is trained with 20 NYUv2 object classes used in ScanNet benchmark, and with 8 support types of predicates. 
 
 [comment]: <> (For 3RScan you will need to generate rendered depths and aligned poses. See [3RScan]&#40;https://github.com/WaldJohannaU/3RScan/tree/master/c%2B%2B&#41;)
 ### Example:
