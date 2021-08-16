@@ -104,6 +104,21 @@ Or using the full sequence from either ScanNet or 3RScan
 ./exe_GraphSLAM --pth_in ./path/to/data --pth_model /path/to/model
 ```
 
+### Run with example sequence
+If you would like to try out the code without downloading the 3RScan & 3DSSG datset, you can clone the repository of [3RScan](git@github.com:WaldJohannaU/3RScan.git
+) which consist of two example sequences. 
+```
+git clone git@github.com:WaldJohannaU/3RScan.git
+cd 3RSan
+bash setup.sh
+```
+Then cd to the `exe_GraphSLAM` executable directory and do 
+```
+./exe_GraphSLAM --pth_in /3RScan/data/3RScan/4acaebcc-6c10-2a2a-858b-29c7e4fb410d/sequence/
+# with graph_pred 
+./exe_GraphSLAM --pth_in /3RScan/data/3RScan/4acaebcc-6c10-2a2a-858b-29c7e4fb410d/sequence/ --pth_model /CVPR21_traced/traced/
+```
+
 
 # License
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
