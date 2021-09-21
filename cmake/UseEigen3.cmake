@@ -8,7 +8,7 @@ IF(WITH_EIGEN)
   IF(NOT Eigen3_FOUND)
     INCLUDE(ConfigureTimeDependency)
     add_configure_time_dependency(Eigen3)
-    find_package(Eigen3 3.4 REQUIRED)
+    find_package(Eigen3 REQUIRED)
   ENDIF()
 
   IF(TARGET Eigen3::Eigen)
