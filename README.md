@@ -107,8 +107,7 @@ Or using the full sequence from either ScanNet or 3RScan
 ```
 
 ### Run with example sequence
-If you would like to try out the code without downloading the 3RScan & 3DSSG datset, you can clone the repository of [3RScan](git@github.com:WaldJohannaU/3RScan.git
-) which consist of two example sequences. 
+If you would like to try out the code without downloading the 3RScan & 3DSSG datset, you can clone the repository of [3RScan](https://github.com/WaldJohannaU/3RScan.git) which consist of two example sequences. 
 ```
 git clone git@github.com:WaldJohannaU/3RScan.git
 cd 3RSan
