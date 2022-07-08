@@ -45,7 +45,7 @@ With graph prediction:
 ```
 # Onnxruntime
 # See https://github.com/microsoft/onnxruntime for more information
-git clone --recursive https://github.com/microsoft/onnxruntime/tree/v1.8.2
+git clone --recursive -b v1.8.2 https://github.com/microsoft/onnxruntime
 cd onnxruntime
 # For Linux
 ./build.sh --config RelWithDebInfo --build_shared_lib --parallel
@@ -69,7 +69,6 @@ build with GUI or graph prediction, pass these options in cmake:
 ```
 cmake -DBUILD_GRAPHPRED=ON -DBUILD_GUI=ON ..
 ```
-Note that the graph prediction module is not yet released. You may encounter error if you build with `BUILD_GRAPHPRED=ON`. That part will be released soon.
 
 # Run
 ```
@@ -139,3 +138,24 @@ If you find the code useful please consider citing our [paper](https://arxiv.org
 # Acknowledgements
 This work is supported by the German Research Foundation (DFG, project number 407378162) and the Bavarian State Ministry of Education, Science and
 the Arts in the framework of the Centre Digitisation Bavaria (ZD.B).
+
+# Troubleshooting
+
+In some platforms the CMake config for Assimp is called `assimpConfig.cmake` and
+in others `AssimpConfig.cmake`. This mismatch can lead to CMake not finding the
+library despite being available in the system. If this is the case, edit
+`cmake/UseAssimp.cmake` to look like this:
+
+```
+find_package(assimp QUIET)
+OPTION(WITH_ASSIMP "Build with Assimp support?" ${assimp_FOUND})
+
+IF(WITH_ASSIMP)
+    MESSAGE(STATUS "WITH Assimp")
+    find_package(assimp REQUIRED)
+    INCLUDE_DIRECTORIES(${assimp_INCLUDE_DIRS})
+ENDIF()
+```
+
+See https://github.com/assimp/assimp/pull/3455,
+https://github.com/microsoft/vcpkg/issues/14256 for more details
